@@ -40,3 +40,8 @@ Future<List<Supplier>> fetchProducts() async {
     throw Exception('Lỗi khi tải nhà cung cấp');
   }
 }
+
+// This alias keeps naming consistent with other models
+Future<List<Supplier>> fetchSupplier() async {
+  return fetchProducts();
+}

@@ -16,20 +16,13 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   late Future<List<Product>> _futureProducts;
-  late Future<List<Brand>> _futureBrands;
-  late Future<List<Supplier>> _futureSuppliers;
-  late Future<List<WatchType>> _futureTypes;
   Product? _selectedProduct;
-  Brand? _selectedBrand;
   bool _initialSelected = false; // 🔸 để không set lại nhiều lần
 
   @override
   void initState() {
     super.initState();
     _futureProducts = fetchProducts();
-    _futureBrands = fetchBrand();
-    _futureSuppliers = fetchSupplier();
-    _futureTypes = fetchWatchType();
   }
 
   @override
@@ -130,9 +123,6 @@ class _ProductDetailFormState extends State<ProductDetailForm> {
   late TextEditingController priceController;
   late TextEditingController stockController;
   late TextEditingController imageUrlController;
-  late TextEditingController brandIdController;
-  late TextEditingController typeIdController;
-  late TextEditingController supplierIdController;
   late TextEditingController descriptionController;
   late TextEditingController actualPriceController;
   late TextEditingController sellPriceController;
@@ -153,6 +143,13 @@ class _ProductDetailFormState extends State<ProductDetailForm> {
   late TextEditingController watchModelController;
   late TextEditingController typeNameController;
 
+  List<Brand> _brands = [];
+  List<Supplier> _suppliers = [];
+  List<WatchType> _types = [];
+  Brand? _selectedBrand;
+  Supplier? _selectedSupplier;
+  WatchType? _selectedType;
+
   late bool isActiveValue;
   late bool visibleValue;
   
@@ -162,9 +159,6 @@ class _ProductDetailFormState extends State<ProductDetailForm> {
 void initState() {
   super.initState();
   nameController = TextEditingController(text: widget.product.name);
-  brandIdController = TextEditingController(text: widget.product.brandId.toString());
-  typeIdController = TextEditingController(text: widget.product.typeId.toString());
-  supplierIdController = TextEditingController(text: widget.product.supplierId.toString());
   descriptionController = TextEditingController(text: widget.product.description);
   actualPriceController = TextEditingController(text: widget.product.actualPrice.toString());
   sellPriceController = TextEditingController(text: widget.product.sellPrice.toString());
@@ -190,6 +184,48 @@ void initState() {
   isActiveValue = widget.product.isActive == 1;
   visibleValue = widget.product.visible == 1;
   isDeletedValue = widget.product.isDeleted == 1;
+
+  fetchBrand().then((value) {
+    Brand? sel;
+    for (var b in value) {
+      if (b.brandId == widget.product.brandId) {
+        sel = b;
+        break;
+      }
+    }
+    setState(() {
+      _brands = value;
+      _selectedBrand = sel ?? (value.isNotEmpty ? value.first : null);
+    });
+  });
+
+  fetchSupplier().then((value) {
+    Supplier? sel;
+    for (var s in value) {
+      if (s.supplierId == widget.product.supplierId) {
+        sel = s;
+        break;
+      }
+    }
+    setState(() {
+      _suppliers = value;
+      _selectedSupplier = sel ?? (value.isNotEmpty ? value.first : null);
+    });
+  });
+
+  fetchWatchType().then((value) {
+    WatchType? sel;
+    for (var t in value) {
+      if (t.typeId == widget.product.typeId) {
+        sel = t;
+        break;
+      }
+    }
+    setState(() {
+      _types = value;
+      _selectedType = sel ?? (value.isNotEmpty ? value.first : null);
+    });
+  });
 }
 
   @override
@@ -216,9 +252,9 @@ void initState() {
   final updated = Product(
     productId: widget.product.productId,
     name: nameController.text,
-    brandId: int.tryParse(brandIdController.text) ?? 0,
-    typeId: int.tryParse(typeIdController.text) ?? 0,
-    supplierId: int.tryParse(supplierIdController.text) ?? 0,
+    brandId: _selectedBrand?.brandId ?? widget.product.brandId,
+    typeId: _selectedType?.typeId ?? widget.product.typeId,
+    supplierId: _selectedSupplier?.supplierId ?? widget.product.supplierId,
     description: descriptionController.text,
     actualPrice: int.tryParse(actualPriceController.text) ?? 0,
     sellPrice: int.tryParse(sellPriceController.text) ?? 0,
@@ -287,9 +323,27 @@ Widget build(BuildContext context) {
           const SizedBox(height: 16),
 
           _buildTextField('Tên sản phẩm', nameController),
-          _buildTextField('Brand ID', brandIdController, isNumber: true),
-          _buildTextField('Type ID', typeIdController, isNumber: true),
-          _buildTextField('Supplier ID', supplierIdController, isNumber: true),
+          _buildDropdown<Brand>(
+            label: 'Brand',
+            value: _selectedBrand,
+            items: _brands,
+            itemLabel: (b) => b.name,
+            onChanged: (val) => setState(() => _selectedBrand = val),
+          ),
+          _buildDropdown<WatchType>(
+            label: 'Type',
+            value: _selectedType,
+            items: _types,
+            itemLabel: (t) => t.typeName,
+            onChanged: (val) => setState(() => _selectedType = val),
+          ),
+          _buildDropdown<Supplier>(
+            label: 'Supplier',
+            value: _selectedSupplier,
+            items: _suppliers,
+            itemLabel: (s) => s.name,
+            onChanged: (val) => setState(() => _selectedSupplier = val),
+          ),
           _buildTextField('Mô tả', descriptionController, maxLines: 3),
           _buildTextField('Giá gốc', actualPriceController, isNumber: true),
           _buildTextField('Giá bán', sellPriceController, isNumber: true),
@@ -343,6 +397,30 @@ Widget _buildTextField(String label, TextEditingController controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       maxLines: maxLines,
       decoration: InputDecoration(labelText: label),
+      onChanged: onChanged,
+    ),
+  );
+}
+
+// Helper widget for Dropdown
+Widget _buildDropdown<T>({
+  required String label,
+  required T? value,
+  required List<T> items,
+  required String Function(T) itemLabel,
+  required ValueChanged<T?> onChanged,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: DropdownButtonFormField<T>(
+      value: value,
+      decoration: InputDecoration(labelText: label),
+      items: items
+          .map((e) => DropdownMenuItem<T>(
+                value: e,
+                child: Text(itemLabel(e)),
+              ))
+          .toList(),
       onChanged: onChanged,
     ),
   );
