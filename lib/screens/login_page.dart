@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'main_layout.dart';
+import 'product_management_screen.dart';
 import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   void _handleLogin() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const MainLayout()),
+      MaterialPageRoute(builder: (_) => ProductManagementScreen()),
     );
   }
 
@@ -81,7 +81,7 @@ Future<void> login(String username, String password, BuildContext context) async
     // Chuyển sang màn chính
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const MainLayout()),
+      MaterialPageRoute(builder: (_) => ProductManagementScreen()),
     );
   } else {
     final error = json.decode(response.body);

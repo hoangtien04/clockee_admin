@@ -2,16 +2,12 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-class Brand {
+class Brand{
   final int brandId;
   final String name;
   final int Is_deleted;
 
-  Brand({
-    required this.brandId, 
-    required this.name,
-    required this.Is_deleted
-    });
+  Brand({required this.brandId, required this.name, required this.Is_deleted});
 
   factory Brand.fromJson(Map<String, dynamic> json) {
     return Brand(
@@ -21,7 +17,6 @@ class Brand {
     );
   }
 }
-
 Future<List<Brand>> fetchBrand() async {
   final url = Uri.parse('http://103.77.243.218/brand');
 

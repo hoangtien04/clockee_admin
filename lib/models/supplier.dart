@@ -28,7 +28,7 @@ class Supplier {
   }
 }
 
-Future<List<Supplier>> fetchProducts() async {
+Future<List<Supplier>> fetchSupplier() async {
   final url = Uri.parse('http://103.77.243.218/supplier');
 
   final response = await http.get(url);
@@ -39,9 +39,4 @@ Future<List<Supplier>> fetchProducts() async {
   } else {
     throw Exception('Lỗi khi tải nhà cung cấp');
   }
-}
-
-// This alias keeps naming consistent with other models
-Future<List<Supplier>> fetchSupplier() async {
-  return fetchProducts();
 }

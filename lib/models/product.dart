@@ -1,9 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
 class Product {
-  final int productId;
+  int? productId;
   String name;
   int brandId;
   int typeId;
@@ -24,17 +20,14 @@ class Product {
   String shellColor;
   String shellStyle;
   String madeIn;
-  int isActive;
-  int visible;
-  int isDeleted;
+  bool isActive;
+  bool visible;
+  bool isDeleted;
   String imageUrl;
   int purchaseCount;
-  int isHot;
-  int sex;
+  bool isHot;
+  bool sex;
   String watchModel;
-
-  // Optional (for joined data like type_name)
-  String? typeName;
 
   Product({
     required this.productId,
@@ -66,7 +59,6 @@ class Product {
     required this.isHot,
     required this.sex,
     required this.watchModel,
-    this.typeName,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -92,85 +84,46 @@ class Product {
       shellColor: json['Shell_color'],
       shellStyle: json['Shell_style'],
       madeIn: json['Made_in'],
-      isActive: json['Is_active'],
-      visible: json['Visible'],
-      isDeleted: json['Is_deleted'],
+      isActive: json['Is_active'] == 1,
+      visible: json['Visible'] == 1,
+      isDeleted: json['Is_deleted'] == 1,
+      isHot: json['Is_hot'] == 1,
       imageUrl: json['Image_url'],
       purchaseCount: json['Purchase_count'],
-      isHot: json['Is_hot'],
-      sex: json['Sex'],
+      sex: json['Sex'] == 1,
       watchModel: json['Watch_model'],
-      typeName: json['Type_name'], // optional field if exists
     );
   }
+  Map<String, dynamic> toJson() => {
+    "Product_id": productId,
+    "Name": name,
+    "Brand_id": brandId,
+    "Type_id": typeId,
+    "Supplier_id": supplierId,
+    "Description": description,
+    "Actual_price": actualPrice,
+    "Sell_price": sellPrice,
+    "Stock": stock,
+    "Face_size": faceSize,
+    "Thickness": thickness,
+    "Wire_size": wireSize,
+    "Energy": energy,
+    "Product_line": productLine,
+    "Face_shape": faceShape,
+    "Face_color": faceColor,
+    "Wire_type": wireType,
+    "Wire_color": wireColor,
+    "Shell_color": shellColor,
+    "Shell_style": shellStyle,
+    "Made_in": madeIn,
+    "Is_active": isActive ? 1 : 0,
+    "Visible": visible ? 1 : 0,
+    "Is_deleted": isDeleted ? 1 : 0,
+    "Image_url": imageUrl,
+    "Purchase_count": purchaseCount,
+    "Is_hot": isHot ? 1 : 0,
+    "Sex": sex ? 1 : 0,      // Nếu sex là bool
+    "Watch_model": watchModel,
+  };
 
-  Map<String, dynamic> toJson() {
-    return {
-      'Product_id': productId,
-      'Name': name,
-      'Brand_id': brandId,
-      'Type_id': typeId,
-      'Supplier_id': supplierId,
-      'Description': description,
-      'Actual_price': actualPrice,
-      'Sell_price': sellPrice,
-      'Stock': stock,
-      'Face_size': faceSize,
-      'Thickness': thickness,
-      'Wire_size': wireSize,
-      'Energy': energy,
-      'Product_line': productLine,
-      'Face_shape': faceShape,
-      'Face_color': faceColor,
-      'Wire_type': wireType,
-      'Wire_color': wireColor,
-      'Shell_color': shellColor,
-      'Shell_style': shellStyle,
-      'Made_in': madeIn,
-      'Is_active': isActive,
-      'Visible': visible,
-      'Is_deleted': isDeleted,
-      'Image_url': imageUrl,
-      'Purchase_count': purchaseCount,
-      'Is_hot': isHot,
-      'Sex': sex,
-      'Watch_model': watchModel,
-      'Type_name': typeName,
-    };
-  }
-}
-
-
-Future<List<Product>> fetchProducts() async {
-  final url = Uri.parse('http://103.77.243.218/product');
-
-  final response = await http.get(url);
-
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
-    return data.map((json) => Product.fromJson(json)).toList();
-  } else {
-    throw Exception('Lỗi khi tải sản phẩm');
-  }
-}
-
-Future<bool> updateProduct(Product product) async {
-  final url = Uri.parse('http://103.77.243.218/api/product/${product.productId}');
-
-  final response = await http.put(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-      // Thêm nếu có token: 'Authorization': 'Bearer your_token',
-    },
-    body: jsonEncode(product.toJson()),
-  );
-
-  if (response.statusCode == 200) {
-    print('Cập nhật sản phẩm thành công');
-    return true;
-  } else {
-    print('Lỗi cập nhật: ${response.statusCode} ${response.body}');
-    return false;
-  }
 }
