@@ -329,7 +329,7 @@ Widget build(BuildContext context) {
       );
     }
   },
-  child: Text('Cập nhật'),
+  child: Text(widget.product == null ? 'Thêm mới' : 'Cập nhật'),
 ),
               ],
             )
